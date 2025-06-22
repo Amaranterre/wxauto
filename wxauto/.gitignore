@@ -1,0 +1,10 @@
+*.lock
+*.log
+.env
+wxauto文件
+
+tmp_test.py
+
+temp
+tmp*
+__pycache__

@@ -1,3 +1,5 @@
+from typing import List
+
 from . import uiautomation as uia
 from .languages import *
 from .utils import *
@@ -9,6 +11,17 @@ import os
 import re
 
 
+class Message:
+    type = 'message'
+
+    def __getitem__(self, index):
+        return self.info[index]
+    
+    def __str__(self):
+        return self.content
+    
+    def __repr__(self):
+        return str(self.info[:2])
 
 class WxParam:
     SYS_TEXT_HEIGHT = 33
@@ -25,7 +38,7 @@ class WeChatBase:
         elif langtype == 'WARNING':
             return WARNING[text][self.language]
 
-    def _split(self, MsgItem):
+    def _split(self, MsgItem) -> Message:
         uia.SetGlobalSearchTimeout(0)
         MsgItemName = MsgItem.Name
         if MsgItem.BoundingRectangle.height() == WxParam.SYS_TEXT_HEIGHT:
@@ -62,7 +75,7 @@ class WeChatBase:
         uia.SetGlobalSearchTimeout(10.0)
         return ParseMessage(Msg, MsgItem, self)
     
-    def _getmsgs(self, msgitems, savepic=False, savefile=False, savevoice=False):
+    def _getmsgs(self, msgitems, savepic=False, savefile=False, savevoice=False) -> List[Message]:
         msgs = []
         for MsgItem in msgitems:
             if MsgItem.ControlTypeName == 'ListItemControl':
@@ -678,18 +691,6 @@ class SessionElement:
         wxlog.debug(f"最后一条消息内容: {self.content}")
         wxlog.debug(f"是否有新消息: {self.isnew}")
 
-
-class Message:
-    type = 'message'
-
-    def __getitem__(self, index):
-        return self.info[index]
-    
-    def __str__(self):
-        return self.content
-    
-    def __repr__(self):
-        return str(self.info[:2])
     
 
 class SysMessage(Message):
@@ -967,7 +968,7 @@ message_types = {
     'Self': SelfMessage
 }
 
-def ParseMessage(data, control, wx):
+def ParseMessage(data, control, wx) -> Message:
     return message_types.get(data[0], FriendMessage)(data, control, wx)
 
 

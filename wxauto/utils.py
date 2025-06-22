@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from datetime import datetime, timedelta
 from . import uiautomation as uia
 from PIL import ImageGrab
@@ -15,7 +17,9 @@ import logging
 import time
 import os
 import re
+import copy
 
+from wobagent.utils import logger 
 VERSION = "3.9.11.17"
 
 def set_cursor_pos(x, y):
@@ -53,7 +57,9 @@ def IsRedPixel(uicontrol):
     rect = uicontrol.BoundingRectangle
     bbox = (rect.left, rect.top, rect.right, rect.bottom)
     img = ImageGrab.grab(bbox=bbox, all_screens=True)
-    return any(p[0] > p[1] and p[0] > p[2] for p in img.getdata())
+    
+    # NOTE: Improve checking
+    return any(p[0] > 200 and p[1] < 100 and p[2] < 100  for p in img.getdata())
 
 class DROPFILES(ctypes.Structure):
     _fields_ = [
@@ -312,19 +318,20 @@ def RollIntoView(win, ele, equal=False):
                 if ele.BoundingRectangle.bottom < win.BoundingRectangle.bottom:
                     break
 
-wxlog = logging.getLogger('wxauto')
-wxlog.setLevel(logging.DEBUG)
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s')
-console_handler.setFormatter(formatter)
-wxlog.addHandler(console_handler)
-wxlog.propagate = False
+wxlog = logger
+# wxlog = copy.deepcopy(logger)
+# wxlog.setLevel(logging.DEBUG)
+# console_handler = logging.StreamHandler()
+# console_handler.setLevel(logging.DEBUG)
+# formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(name)s (%(filename)s:%(lineno)d): %(message)s')
+# console_handler.setFormatter(formatter)
+# wxlog.addHandler(console_handler)
+# wxlog.propagate = False
 
-def set_debug(debug: bool):
-    if debug:
-        wxlog.setLevel(logging.DEBUG)
-        console_handler.setLevel(logging.DEBUG)
-    else:
-        wxlog.setLevel(logging.INFO)
-        console_handler.setLevel(logging.INFO)
+# def set_debug(debug: bool):
+#     if debug:
+#         wxlog.setLevel(logging.DEBUG)
+#         console_handler.setLevel(logging.DEBUG)
+#     else:
+#         wxlog.setLevel(logging.INFO)
+#         console_handler.setLevel(logging.INFO)
