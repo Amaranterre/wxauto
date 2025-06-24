@@ -395,11 +395,15 @@ class WeChat(WeChatBase):
         Returns:
             chatname ( str ): 匹配值第一个的完整名字
         '''
+        wxlog.debug(f"Chat with {who}")
         self._show()
         sessiondict = self.GetSessionList(True)
         wxlog.debug("Get Session dict")
         if who in list(sessiondict.keys())[:-1]:
-            self.SessionBox.ListItemControl(RegexName=who).Click(simulateMove=False)
+            # NOTE(shiver): "ListItem"类型的组件，Name字段会附带上字符串“？条新消息”
+            # 因此原来搜索的是靠RegexName搜索。但Regex需要Escape,因为群名带"[]"时会被认定为Regex内容。
+            # 因此这里采用搜索 ButtonControl 的方法
+            self.SessionBox.ButtonControl(Name=who).Click(simulateMove=False)
             return who
         else:
             # Focus on search box
@@ -514,6 +518,8 @@ class WeChat(WeChatBase):
             if isinstance(at, str):
                 at = [at]
             for i in at:
+                # NOTE: AT别人时，若名字带空格会关闭 AT面板
+                i = i.split(' ')[0]
                 editbox.SendKeys('@'+i)
                 atwnd = self.UiaAPI.PaneControl(ClassName='ChatContactMenu')
                 if atwnd.Exists(maxSearchSeconds=0.1):
